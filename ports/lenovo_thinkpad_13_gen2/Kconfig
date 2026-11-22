@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+if BOARD_LENOVO_THINKPAD_13_GEN2
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select AZALIA_USE_LEGACY_VERB_TABLE
+	select BOARD_ROMSIZE_KB_16384
+	select DRIVERS_OPTION_CFR_ENABLED if PAYLOAD_EDK2 && SMMSTORE
+	select HAVE_ACPI_RESUME
+	select HAVE_ACPI_TABLES
+	select INTEL_GMA_HAVE_VBT
+	select MAINBOARD_HAS_LIBGFXINIT
+	select MAINBOARD_HAS_TPM2
+	select MAINBOARD_USES_IFD_GBE_REGION
+	select MEMORY_MAPPED_TPM
+	select SOC_INTEL_COMMON_BLOCK_HDA_VERB
+	select SOC_INTEL_KABYLAKE
+	select SPD_READ_BY_WORD
+	select SYSTEM_TYPE_LAPTOP
+
+config MAINBOARD_DIR
+	default "lenovo/thinkpad_13_gen2"
+
+config MAINBOARD_PART_NUMBER
+	default "ThinkPad 13 2nd Gen"
+
+config CBFS_SIZE
+	default 0x900000
+
+config DIMM_MAX
+	default 2
+
+config DIMM_SPD_SIZE
+	default 512
+
+config CONSOLE_SERIAL
+	default n
+
+config NO_POST
+	default y
+
+config EDK2_BOOT_MANAGER_ESCAPE
+	default y
+
+config EDK2_FOLLOW_BGRT_SPEC
+	default y
+
+config EDK2_FULL_SCREEN_SETUP
+	default y
+
+config PS2K_EISAID
+	default "LEN0071"
+
+config PS2M_EISAID
+	default "LEN0094"
+
+endif

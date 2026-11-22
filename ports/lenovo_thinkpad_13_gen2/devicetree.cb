@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+chip soc/intel/skylake
+
+	# Power management timings
+	register "PmConfigSlpS3MinAssert" = "2"		# 50ms
+	register "PmConfigSlpS4MinAssert" = "1"		# 1s
+	register "PmConfigSlpSusMinAssert" = "3"	# 500ms
+	register "PmConfigSlpAMinAssert" = "3"		# 2s
+
+	# Enable Intel SpeedStep (EIST) and keep CSME operational
+	register "eist_enable" = "true"
+
+	device domain 0 on
+		subsystemid 0x17aa 0x5063 inherit
+
+		# Intel HD Graphics 620 (LP133WF2-SPL8 eDP + HDMI/DP)
+		device ref igpu on
+			register "gfx" = "GMA_STATIC_DISPLAYS(0)"
+			register "panel_cfg" = "{
+				.up_delay_ms		= 200,
+				.down_delay_ms		=  50,
+				.cycle_delay_ms		= 600,
+				.backlight_on_delay_ms	=   1,
+				.backlight_off_delay_ms	= 200,
+				.backlight_pwm_hz	= 200,
+			}"
+		end
+
+		device ref sa_thermal on end
+		device ref thermal on end
+		device ref i2c0 on end
+
+		# Sunrise Point-LP xHCI USB controller
+		device ref south_xhci on
+			register "usb2_ports" = "{
+				[0] = USB2_PORT_MID(OC0),	// USB-A
+				[1] = USB2_PORT_MID(OC1),	// USB-A / Hub
+				[2] = USB2_PORT_MID(OC_SKIP),	// Integrated Webcam
+				[3] = USB2_PORT_MID(OC_SKIP),	// Fingerprint Reader
+				[4] = USB2_PORT_MID(OC2),	// USB-C
+				[5] = USB2_PORT_MID(OC_SKIP),
+				[6] = USB2_PORT_MID(OC_SKIP),	// Intel Bluetooth
+				[7] = USB2_PORT_MID(OC_SKIP),
+			}"
+			register "usb3_ports" = "{
+				[0] = USB3_PORT_DEFAULT(OC0),
+				[1] = USB3_PORT_DEFAULT(OC1),
+				[2] = USB3_PORT_DEFAULT(OC_SKIP),
+				[3] = USB3_PORT_DEFAULT(OC2),
+			}"
+		end
+
+		# PCIe RP1 (00:1c.0) - Card reader / expansion x1
+		device ref pcie_rp1 on
+			register "PcieRpClkReqSupport[0]" = "true"
+			register "PcieRpClkReqNumber[0]" = "2"
+			register "PcieRpAdvancedErrorReporting[0]" = "true"
+			register "PcieRpLtrEnable[0]" = "true"
+		end
+
+		# PCIe RP4 (00:1c.3) - Intel Wireless 8265 (03:00.0) x1
+		device ref pcie_rp4 on
+			register "PcieRpClkReqSupport[3]" = "true"
+			register "PcieRpClkReqNumber[3]" = "3"
+			register "PcieRpAdvancedErrorReporting[3]" = "true"
+			register "PcieRpLtrEnable[3]" = "true"
+			smbios_slot_desc "SlotTypeM2Socket1_DP" "SlotLengthOther" "M.2/A 2230 WLAN" "SlotDataBusWidth1X"
+		end
+
+		# PCIe RP5 (00:1c.4) - Intel NVMe SSD 600P (04:00.0) x4
+		device ref pcie_rp5 on
+			register "PcieRpClkReqSupport[4]" = "true"
+			register "PcieRpClkReqNumber[4]" = "4"
+			register "PcieRpAdvancedErrorReporting[4]" = "true"
+			register "PcieRpLtrEnable[4]" = "true"
+			smbios_slot_desc "SlotTypeM2Socket3" "SlotLengthOther" "M.2/M 2280 NVMe" "SlotDataBusWidth4X"
+		end
+
+		# Intel Ethernet Connection (4) I219-V (00:1f.6)
+		device ref gbe on
+			register "EnableLanLtr" = "true"
+			register "EnableLanK1Off" = "true"
+		end
+
+		# Sunrise Point-LP LPC (standard ACPI EC at 0x62/0x66 + KBC 0x60/0x64 + TPM2)
+		device ref lpc_espi on
+			register "serirq_mode" = "SERIRQ_CONTINUOUS"
+			register "lpc_ioe" = "LPC_IOE_EC_62_66 | LPC_IOE_KBC_60_64"
+
+			chip drivers/pc80/tpm
+				device pnp 0c31.0 on end
+			end
+		end
+
+		# Realtek ALC298 + Kaby Lake HDMI HDA Audio (00:1f.3)
+		device ref hda on end
+		device ref smbus on end
+	end
+end

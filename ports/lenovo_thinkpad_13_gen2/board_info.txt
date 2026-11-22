@@ -1,0 +1,8 @@
+Vendor name: Lenovo
+Board name: ThinkPad 13 2nd Gen (20J1/20J2)
+Category: laptop
+ROM package: SOIC-8
+ROM protocol: SPI
+ROM socketed: n
+Flashrom support: y
+Release year: 2017

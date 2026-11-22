@@ -18,6 +18,7 @@ from cb4a.catalog import generate_catalog
 from cb4a.flashkit import FlashKitError, generate_flashkit
 from cb4a.manifest import verify_rom_against_manifest, write_sha256sums
 from cb4a.records import export_json_schema, load_all_records
+from cb4a.revert import RevertError, build_revert_plan, execute_revert_plan
 from cb4a.score import compute_score_and_tier
 
 app = typer.Typer(
@@ -239,3 +240,49 @@ def doctor() -> None:
         console.print(f"[red]E-25: Missing tools: {', '.join(missing)}[/red]")
         raise typer.Exit(code=25)
     console.print("[green]Environment check passed.[/green]")
+
+
+@app.command()
+def revert(
+    device_id: str = typer.Option(..., "--id", help="Device record ID."),
+    backup: Path = typer.Option(..., "--backup", help="Path to official vendor BIOS backup ROM."),
+    method: FlashMethod = typer.Option(
+        FlashMethod.external, "--method", help="Revert method (external or internal)."
+    ),
+    expected_sha256: Optional[str] = typer.Option(
+        None, "--sha256", help="Expected SHA-256 digest of the official backup."
+    ),
+    programmer: str = typer.Option(
+        "ch341a_spi", "--programmer", help="flashrom external programmer string."
+    ),
+    execute: bool = typer.Option(
+        False, "--execute", help="Execute flashrom (omit for safe dry-run)."
+    ),
+) -> None:
+    """Verify an official vendor BIOS backup and plan or execute a safe revert."""
+    repo_root = _repo_root()
+    _, rec = _find_device(device_id, repo_root)
+    try:
+        plan = build_revert_plan(
+            rec,
+            backup,
+            method=method.value,
+            expected_sha256=expected_sha256,
+            programmer=programmer,
+        )
+    except RevertError as exc:
+        console.print(f"[red]E-24: {exc}[/red]")
+        raise typer.Exit(code=24)
+
+    typer.echo(f"device={plan.device_id} method={plan.method} sha256={plan.backup_sha256}")
+    typer.echo(f"command={' '.join(plan.command)}")
+    for warn in plan.warnings:
+        console.print(f"[yellow]WARNING: {warn}[/yellow]")
+
+    if not execute:
+        console.print("[green]Dry-run complete. Re-run with --execute after human review.[/green]")
+        return
+
+    rc = execute_revert_plan(plan, execute=True)
+    if rc != 0:
+        raise typer.Exit(code=22)

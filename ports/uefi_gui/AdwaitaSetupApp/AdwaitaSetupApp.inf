@@ -1,0 +1,33 @@
+## @file
+#  Coreboot4All Adwaita/Pantheon HIG Graphical UEFI Setup Application
+#  SPDX-License-Identifier: GPL-2.0-or-later
+##
+
+[Defines]
+  INF_VERSION                    = 0x0001001B
+  BASE_NAME                      = AdwaitaSetupApp
+  FILE_GUID                      = 8B4C6A91-4D2E-4F18-9A73-2C1E5F09D8A2
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  AdwaitaSetupApp.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  PrintLib
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gEfiSimplePointerProtocolGuid
+  gEfiSimpleTextInputExProtocolGuid

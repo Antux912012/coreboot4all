@@ -22,7 +22,8 @@ git submodule update --init --checkout --depth 1 \
   3rdparty/blobs \
   3rdparty/libgfxinit \
   3rdparty/vboot \
-  3rdparty/intel-microcode
+  3rdparty/intel-microcode \
+  3rdparty/fsp
 
 # SeaBIOS is an external payload Makefile, not a Git submodule.
 # Pre-fetch SeaBIOS into payloads/external/SeaBIOS/seabios for offline builds.

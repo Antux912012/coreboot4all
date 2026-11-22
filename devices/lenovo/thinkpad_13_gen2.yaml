@@ -1,0 +1,72 @@
+schema_version: 1
+id: lenovo_thinkpad_13_gen2
+vendor: Lenovo
+model: ThinkPad 13 2nd Gen (20J1003WGM)
+year: 2017
+category: laptop
+platform:
+  cpu_vendor: intel
+  cpu_family: kabylake
+  chipset: sunrise_point_lp
+  superio: null
+  ec: lenovo/h8
+  flash_chips:
+    - position: mainboard
+      size_mib: 16
+      package: soic8
+      model: "Macronix MX25L12805D"
+      regions: [descriptor, bios, me, gbe]
+  flash_size_mib: 16
+  flash_package: soic8
+  regions: [descriptor, bios, me, gbe]
+coreboot:
+  mainboard_path: null
+  in_tree: false
+  chipset_supported: true
+  sibling_mainboard: lenovo/sklkbl_thinkpad
+  public_datasheet: true
+  coreboot_tag: "26.09"
+  payload: edk2
+  payload_complete: true
+  ram_init: fsp
+  graphics_init: libgfxinit
+  blobs_required: [ifd, me, gbe, fsp]
+  defconfig: null
+blockers:
+  boot_guard:
+    state: disabled
+    source: "Host MSR 0x13A = 0x0000000000000000 (VERIFIED_BOOT=0, MEASURED_BOOT=0, BTG_CAPABILITY=0) and fwupdmgr HFSTS6=0x40000000, 2026-11-22"
+  psb:
+    fused: false
+    source: "Intel Kaby Lake platform (AMD PSB does not apply), 2026-11-22"
+  arm_signed_bootrom: false
+  recovery:
+    external_programmer: true
+    internal_flash: false
+    write_protect_screw: false
+    tested: false
+    tested_date: null
+    notes: "Single 16 MiB SOIC-8 Macronix MX25L12805D. Stock BIOS sets BLE=1 and SMM_BWP=1; external 3.3 V SPI programmer required for full backup and initial flash."
+status:
+  tier: B
+  score: 50
+  score_flags: ["SC-02", "SC-03", "SC-04", "SC-06", "SC-07"]
+  build_verified: false
+  hardware_tested: false
+  last_build: null
+  last_test: null
+artifacts:
+  manifest: null
+  rom_sha256: null
+  raw_files:
+    - "out/devices/lenovo_thinkpad_13_gen2/raw/msr_13a.txt"
+    - "out/devices/lenovo_thinkpad_13_gen2/raw/dmidecode.txt"
+    - "out/devices/lenovo_thinkpad_13_gen2/raw/lspci.txt"
+    - "out/devices/lenovo_thinkpad_13_gen2/raw/flashrom_probe.txt"
+    - "out/devices/lenovo_thinkpad_13_gen2/raw/fwupd_security.json"
+sources:
+  - url: "https://doc.coreboot.org/mainboard/lenovo/skylake.html"
+    note: "Sibling Lenovo Skylake/Kaby Lake ThinkPad port documentation"
+maintainer:
+  name: "Antonio De Gaetano"
+  contact: "https://github.com/Antux912012/coreboot4all"

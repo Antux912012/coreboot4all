@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_LENOVO_THINKPAD_13_GEN2
+	bool "ThinkPad 13 2nd Gen (20J1/20J2)"
