@@ -1,0 +1,93 @@
+# External Flash Procedure: {{ device.vendor }} {{ device.model }}
+
+**Device ID:** `{{ device.id }}`
+**Tier:** {{ device.status.tier }} | **Score:** {{ device.status.score }}/100
+**Flash Size:** {{ device.platform.flash_size_mib }} MiB ({{ device.platform.flash_package }})
+
+## 1. Hardware Safety Checklist
+
+1. Disconnect the AC adapter.
+2. Remove the main battery and the CMOS coin battery when accessible.
+3. Press and hold the power button for 10 seconds to discharge capacitors.
+4. Measure the programmer VCC pin with a multimeter:
+   - Standard SOIC-8 SPI flash uses **3.3 V**.
+   - Low-voltage 1.8 V parts require a **1.8 V level shifter**.
+   - **NEVER** connect an unmodified 5 V signal CH341A programmer to a 3.3 V or 1.8 V flash chip.
+5. Verify pin 1 alignment before connecting the clip.
+6. Preserve the `GbE` region (`gbe.bin`) so the Ethernet MAC address is not lost.
+
+## 2. Mandatory 3-Read Backup
+
+{% if dual_chip %}
+This device uses **{{ device.platform.flash_chips | length }} SPI flash chips**:
+{% for chip in device.platform.flash_chips %}
+- **{{ chip.position }} chip**: {{ chip.size_mib }} MiB ({{ chip.package }}) — regions: {{ chip.regions | join(", ") }}
+{% endfor %}
+
+Take three identical reads of each chip and verify matching SHA-256 digests:
+
+```bash
+# Bottom 8 MiB chip (IFD, ME, GbE)
+flashrom -p <programmer> -r bottom1.bin
+flashrom -p <programmer> -r bottom2.bin
+flashrom -p <programmer> -r bottom3.bin
+sha256sum bottom1.bin bottom2.bin bottom3.bin
+
+# Top 4 MiB chip (BIOS)
+flashrom -p <programmer> -r top1.bin
+flashrom -p <programmer> -r top2.bin
+flashrom -p <programmer> -r top3.bin
+sha256sum top1.bin top2.bin top3.bin
+
+# Combine into a full backup image
+cat bottom1.bin top1.bin > {{ device.id }}_full_backup.rom
+```
+{% else %}
+Take three identical reads and verify matching SHA-256 digests:
+
+```bash
+flashrom -p <programmer> -r read1.bin
+flashrom -p <programmer> -r read2.bin
+flashrom -p <programmer> -r read3.bin
+sha256sum read1.bin read2.bin read3.bin
+cp read1.bin {{ device.id }}_full_backup.rom
+```
+{% endif %}
+
+## 3. Flash Coreboot Image
+
+Verify the built ROM checksum first:
+
+```bash
+cb4a verify --id {{ device.id }} --rom out/builds/{{ device.id }}/coreboot.rom
+```
+
+{% if dual_chip %}
+Split the 12 MiB ROM into bottom (8 MiB) and top (4 MiB) images:
+
+```bash
+dd if=out/builds/{{ device.id }}/coreboot.rom of={{ device.id }}_bottom_new.bin bs=1M count=8
+dd if=out/builds/{{ device.id }}/coreboot.rom of={{ device.id }}_top_new.bin bs=1M skip=8
+```
+
+- For a **BIOS-only** update, flash only the **4 MiB top chip**:
+  ```bash
+  flashrom -p <programmer> -w {{ device.id }}_top_new.bin
+  ```
+- For a **full** update (IFD/ME changed), flash both chips:
+  ```bash
+  flashrom -p <programmer> -w {{ device.id }}_bottom_new.bin
+  flashrom -p <programmer> -w {{ device.id }}_top_new.bin
+  ```
+{% else %}
+- For a **BIOS-only** image on Intel (preserves IFD, ME, and GbE):
+  ```bash
+  flashrom -p <programmer> --ifd -i bios -w out/builds/{{ device.id }}/coreboot.rom
+  ```
+- For a **full** image (built with device-specific IFD, ME, and GbE):
+  ```bash
+  flashrom -p <programmer> -w out/builds/{{ device.id }}/coreboot.rom
+  ```
+{% endif %}
+
+Do not pass `--noverify`. See `recover.md` if the device fails to boot.

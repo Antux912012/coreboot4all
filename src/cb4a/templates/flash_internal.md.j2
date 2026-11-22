@@ -1,0 +1,32 @@
+# Internal Flash Procedure: {{ device.vendor }} {{ device.model }}
+
+**Device ID:** `{{ device.id }}`
+**Tier:** {{ device.status.tier }} | **Score:** {{ device.status.score }}/100
+
+## 1. Prerequisites
+
+- External programmer backup already stored and verified (see `recover.md`).
+- **NEVER** overwrite the IFD, ME, or GbE regions internally. Preserve the GbE region so the Ethernet MAC address stays intact.
+- Confirm 3.3 V / 1.8 V external programmer availability before flashing in case recovery is needed.
+
+## 2. Mandatory 3-Read Internal BIOS Backup
+
+Run on the target host OS (not inside a container):
+
+```bash
+sudo flashrom -p internal --ifd -i bios -r bios_read1.bin
+sudo flashrom -p internal --ifd -i bios -r bios_read2.bin
+sudo flashrom -p internal --ifd -i bios -r bios_read3.bin
+sha256sum bios_read1.bin bios_read2.bin bios_read3.bin
+```
+
+All three SHA-256 digests MUST match.
+
+## 3. Flash Only the BIOS Region
+
+```bash
+cb4a verify --id {{ device.id }} --rom out/builds/{{ device.id }}/coreboot.rom
+sudo flashrom -p internal --ifd -i bios -w out/builds/{{ device.id }}/coreboot.rom
+```
+
+Shut down completely (`sudo poweroff`), wait 10 seconds, and power on.

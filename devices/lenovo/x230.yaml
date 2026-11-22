@@ -1,0 +1,72 @@
+schema_version: 1
+id: lenovo_x230
+vendor: Lenovo
+model: ThinkPad X230
+year: 2012
+category: laptop
+platform:
+  cpu_vendor: intel
+  cpu_family: ivybridge
+  chipset: qm77
+  superio: null
+  ec: lenovo/h8
+  flash_chips:
+    - position: bottom
+      size_mib: 8
+      package: soic8
+      model: "Winbond W25Q64 / Macronix MX25L6406E"
+      regions: [descriptor, me, gbe]
+    - position: top
+      size_mib: 4
+      package: soic8
+      model: "Winbond W25Q32 / Macronix MX25L3206E"
+      regions: [bios]
+  flash_size_mib: 12
+  flash_package: soic8
+  regions: [descriptor, bios, me, gbe]
+coreboot:
+  mainboard_path: lenovo/x230
+  in_tree: true
+  chipset_supported: true
+  sibling_mainboard: lenovo/t430
+  public_datasheet: true
+  coreboot_tag: "26.09"
+  payload: seabios
+  payload_complete: true
+  ram_init: native_raminit
+  graphics_init: libgfxinit
+  blobs_required: [ifd, me, gbe]
+  defconfig: configs/coreboot/lenovo_x230.defconfig
+blockers:
+  boot_guard:
+    state: disabled
+    source: "Intel Ivy Bridge does not implement Boot Guard, 2026-11-22"
+  psb:
+    fused: false
+    source: "Intel platform (AMD PSB does not apply), 2026-11-22"
+  arm_signed_bootrom: false
+  recovery:
+    external_programmer: true
+    internal_flash: true
+    write_protect_screw: false
+    tested: false
+    tested_date: null
+    notes: "Two SOIC-8 chips under the palm rest. Bottom 8 MiB chip holds IFD, ME, and GbE. Top 4 MiB chip holds BIOS."
+status:
+  tier: A
+  score: 90
+  score_flags: ["SC-01", "SC-02", "SC-03", "SC-04", "SC-05", "SC-06", "SC-07"]
+  build_verified: false
+  hardware_tested: false
+  last_build: null
+  last_test: null
+artifacts:
+  manifest: "out/builds/lenovo_x230/manifest.json"
+  rom_sha256: null
+  raw_files: []
+sources:
+  - url: "https://doc.coreboot.org/mainboard/lenovo/x230.html"
+    note: "coreboot ThinkPad X230 documentation"
+maintainer:
+  name: "Coreboot4All Maintainers"
+  contact: "https://github.com/Antux912012/coreboot4all"

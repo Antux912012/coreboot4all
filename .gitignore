@@ -1,0 +1,14 @@
+out/
+site/
+cache/
+*.rom
+*.bin
+*.fd
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+.venv/
+env/*.local
+*.log

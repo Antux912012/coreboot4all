@@ -1,0 +1,11 @@
+Coreboot4All (`cb4a`) is licensed under the GNU General Public License,
+version 2 or (at your option) any later version (GPL-2.0-or-later).
+
+Device catalog data under `devices/` and documentation under `docs/` are
+licensed under Creative Commons Attribution 4.0 International (CC-BY-4.0).
+
+Built coreboot ROM images are subject to the upstream coreboot license
+(primarily GPL-2.0-only; see upstream COPYING and file SPDX headers) and
+any applicable payload and binary blob licenses.
+
+See `LICENSES/` and `NOTICE` for full license texts and notices.

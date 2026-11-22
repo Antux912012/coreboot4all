@@ -1,0 +1,8 @@
+Coreboot4All
+Copyright (c) 2026 Coreboot4All Contributors
+
+This project orchestrates builds of upstream coreboot (https://www.coreboot.org/),
+SeaBIOS, and related open-source firmware utilities.
+
+Proprietary binary blobs (Intel ME, Intel FSP, AMD PSP, AMD AGESA, vendor
+VBIOS, or owner-extracted flash regions) are NOT distributed in this repository.

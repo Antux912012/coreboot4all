@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ device.vendor }} {{ device.model }} — Coreboot4All</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #1b1f23; line-height: 1.5; }
+    .tier-badge { display: inline-block; font-size: 1.5rem; font-weight: 800; padding: 0.3rem 0.9rem; border-radius: 6px; color: #fff; background: #0969da; }
+    .tier-A { background: #1a7f37; }
+    .tier-B { background: #0969da; }
+    .tier-C { background: #9a6700; }
+    .tier-D { background: #cf222e; }
+    .warning-box { border: 2px solid #cf222e; background: #ffebe9; padding: 1rem; border-radius: 6px; margin: 1.25rem 0; }
+    dl { display: grid; grid-template-columns: 220px 1fr; gap: 0.5rem 1rem; }
+    dt { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <p><a href="../index.html">Back to Catalog</a> | <a href="../tier-d.html">Tier D Devices</a></p>
+  <h1>{{ device.vendor }} {{ device.model }} ({{ device.year }})</h1>
+  <p>
+    <span class="tier-badge tier-{{ device.status.tier }}">Tier {{ device.status.tier }}</span>
+    <strong>Portability Score:</strong> {{ device.status.score }} / 100
+  </p>
+
+  <div class="warning-box">
+    <strong>Brick Risk Warning:</strong> Flashing firmware can permanently disable a device if the backup is incomplete, the voltage is wrong (3.3 V vs 1.8 V), or a hardware boot lock is active. Always take three identical backup reads before writing.
+  </div>
+
+  <h2>Blockers and Evidence</h2>
+  <dl>
+    <dt>Intel Boot Guard</dt>
+    <dd>{{ device.blockers.boot_guard.state }} — Source: {{ device.blockers.boot_guard.source }}</dd>
+    <dt>AMD PSB</dt>
+    <dd>{{ "fused" if device.blockers.psb.fused else "not fused" }} — Source: {{ device.blockers.psb.source }}</dd>
+    <dt>Recovery</dt>
+    <dd>External: {{ device.blockers.recovery.external_programmer }}, Internal: {{ device.blockers.recovery.internal_flash }} — {{ device.blockers.recovery.notes }}</dd>
+  </dl>
+
+  <h2>Build &amp; Firmware Details</h2>
+  <dl>
+    <dt>Build Status</dt>
+    <dd>{{ "Verified" if device.status.build_verified else "Not verified" }}</dd>
+    <dt>Payload</dt>
+    <dd>{{ device.coreboot.payload }}</dd>
+    <dt>Blobs Required</dt>
+    <dd>{{ device.coreboot.blobs_required | join(", ") if device.coreboot.blobs_required else "None" }}</dd>
+    <dt>Flash &amp; Recovery Kits</dt>
+    <dd><code>cb4a flashkit --id {{ device.id }} --method external</code> (writes <code>out/kits/{{ device.id }}/flash_external.md</code> and <code>recover.md</code>)</dd>
+    <dt>Last Updated</dt>
+    <dd>{{ device.status.last_build or generated_utc }}</dd>
+  </dl>
+</body>
+</html>

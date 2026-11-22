@@ -1,0 +1,88 @@
+name: cb4a
+
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: docker/builder.Dockerfile
+      args:
+        COREBOOT_SDK: docker.io/coreboot/coreboot-sdk:2026-09-27_97eb3c4d52
+    image: cb4a/builder:26.09
+    user: "${CB4A_UID:-1000}:${CB4A_GID:-1000}"
+    working_dir: /work
+    volumes:
+      - type: bind
+        source: .
+        target: /work
+      - type: volume
+        source: ccache
+        target: /cache/ccache
+      - type: volume
+        source: sources
+        target: /cache/sources
+    environment:
+      SOURCE_DATE_EPOCH: "1700000000"
+      CB4A_CACHE_DIR: /cache
+      CB4A_JOBS: "${CB4A_JOBS:-4}"
+      TERM: xterm-256color
+    command: ["cb4a", "validate"]
+    networks:
+      - buildnet
+
+  tools:
+    build:
+      context: .
+      dockerfile: docker/tools.Dockerfile
+      args:
+        COREBOOT_TAG: "26.09"
+    image: cb4a/tools:1.0
+    user: "${CB4A_UID:-1000}:${CB4A_GID:-1000}"
+    working_dir: /work
+    volumes:
+      - type: bind
+        source: .
+        target: /work
+    # No "privileged: true".
+    # External USB programmers need read-write ioctl access to their USB node.
+    # Uncomment only the specific programmer device when flashing:
+    # devices:
+    #   - "/dev/bus/usb:/dev/bus/usb"
+    #   - "/dev/ttyUSB0:/dev/ttyUSB0"
+    environment:
+      TERM: xterm-256color
+    command: ["bash"]
+    networks:
+      - toolsnet
+
+  # An offline build. Use this service to prove reproducibility.
+  builder-offline:
+    profiles: ["offline"]
+    image: cb4a/builder:26.09
+    user: "${CB4A_UID:-1000}:${CB4A_GID:-1000}"
+    working_dir: /work
+    network_mode: none
+    volumes:
+      - type: bind
+        source: .
+        target: /work
+      - type: volume
+        source: ccache
+        target: /cache/ccache
+      - type: volume
+        source: sources
+        target: /cache/sources
+    environment:
+      SOURCE_DATE_EPOCH: "1700000000"
+      CB4A_CACHE_DIR: /cache
+      CB4A_JOBS: "${CB4A_JOBS:-4}"
+    command: ["cb4a", "build", "--id", "emulation_qemu_q35", "--offline"]
+
+volumes:
+  ccache:
+  sources:
+
+networks:
+  buildnet:
+    driver: bridge
+  toolsnet:
+    driver: bridge

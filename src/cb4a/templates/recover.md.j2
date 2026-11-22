@@ -1,0 +1,30 @@
+# Recovery Procedure: {{ device.vendor }} {{ device.model }}
+
+**Device ID:** `{{ device.id }}`
+**External Programmer Supported:** {{ device.blockers.recovery.external_programmer }}
+**Notes:** {{ device.blockers.recovery.notes }}
+
+## 1. Preparation
+
+1. Remove AC power and all batteries. Wait 10 seconds.
+2. Verify the programmer VCC voltage is **3.3 V** (or **1.8 V** with level shifter if applicable).
+3. Verify the SHA-256 checksum of your stored original vendor backup before writing.
+
+## 2. Restore Original Vendor Firmware
+
+{% if dual_chip %}
+Write the verified bottom (8 MiB) and top (4 MiB) backups back to their respective chips:
+
+```bash
+flashrom -p <programmer> -w bottom1.bin
+flashrom -p <programmer> -w top1.bin
+```
+{% else %}
+Write the verified full vendor backup back to the SPI flash chip:
+
+```bash
+flashrom -p <programmer> -w {{ device.id }}_full_backup.rom
+```
+{% endif %}
+
+4. Disconnect the clip, reconnect power, and confirm the vendor firmware boots normally.

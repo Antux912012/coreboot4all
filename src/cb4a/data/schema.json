@@ -1,0 +1,595 @@
+{
+  "$defs": {
+    "ArtifactsInfo": {
+      "additionalProperties": false,
+      "description": "Build and raw data artifact references.",
+      "properties": {
+        "manifest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Manifest"
+        },
+        "rom_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rom Sha256"
+        },
+        "raw_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Raw Files",
+          "type": "array"
+        }
+      },
+      "title": "ArtifactsInfo",
+      "type": "object"
+    },
+    "BlockersInfo": {
+      "additionalProperties": false,
+      "description": "Hardware and firmware blockers.",
+      "properties": {
+        "boot_guard": {
+          "$ref": "#/$defs/BootGuardBlocker"
+        },
+        "psb": {
+          "$ref": "#/$defs/PsbBlocker"
+        },
+        "arm_signed_bootrom": {
+          "default": false,
+          "title": "Arm Signed Bootrom",
+          "type": "boolean"
+        },
+        "recovery": {
+          "$ref": "#/$defs/RecoveryInfo"
+        }
+      },
+      "required": [
+        "boot_guard",
+        "psb",
+        "recovery"
+      ],
+      "title": "BlockersInfo",
+      "type": "object"
+    },
+    "BootGuardBlocker": {
+      "additionalProperties": false,
+      "description": "Intel Boot Guard status and dated evidence.",
+      "properties": {
+        "state": {
+          "enum": [
+            "disabled",
+            "measured",
+            "verified",
+            "unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "source"
+      ],
+      "title": "BootGuardBlocker",
+      "type": "object"
+    },
+    "CorebootInfo": {
+      "additionalProperties": false,
+      "description": "coreboot build configuration metadata for a device.",
+      "properties": {
+        "mainboard_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mainboard Path"
+        },
+        "in_tree": {
+          "title": "In Tree",
+          "type": "boolean"
+        },
+        "chipset_supported": {
+          "default": true,
+          "title": "Chipset Supported",
+          "type": "boolean"
+        },
+        "sibling_mainboard": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sibling Mainboard"
+        },
+        "public_datasheet": {
+          "default": true,
+          "title": "Public Datasheet",
+          "type": "boolean"
+        },
+        "coreboot_tag": {
+          "minLength": 1,
+          "title": "Coreboot Tag",
+          "type": "string"
+        },
+        "payload": {
+          "enum": [
+            "seabios",
+            "edk2",
+            "linuxboot",
+            "none"
+          ],
+          "title": "Payload",
+          "type": "string"
+        },
+        "payload_complete": {
+          "default": true,
+          "title": "Payload Complete",
+          "type": "boolean"
+        },
+        "ram_init": {
+          "minLength": 1,
+          "title": "Ram Init",
+          "type": "string"
+        },
+        "graphics_init": {
+          "minLength": 1,
+          "title": "Graphics Init",
+          "type": "string"
+        },
+        "blobs_required": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Blobs Required",
+          "type": "array"
+        },
+        "defconfig": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Defconfig"
+        }
+      },
+      "required": [
+        "in_tree",
+        "coreboot_tag",
+        "payload",
+        "ram_init",
+        "graphics_init"
+      ],
+      "title": "CorebootInfo",
+      "type": "object"
+    },
+    "FlashChip": {
+      "additionalProperties": false,
+      "description": "Physical SPI flash chip description.",
+      "properties": {
+        "position": {
+          "minLength": 1,
+          "title": "Position",
+          "type": "string"
+        },
+        "size_mib": {
+          "exclusiveMinimum": 0,
+          "title": "Size Mib",
+          "type": "integer"
+        },
+        "package": {
+          "minLength": 1,
+          "title": "Package",
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "regions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Regions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "position",
+        "size_mib",
+        "package",
+        "model",
+        "regions"
+      ],
+      "title": "FlashChip",
+      "type": "object"
+    },
+    "MaintainerInfo": {
+      "additionalProperties": false,
+      "description": "Device record maintainer.",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "contact": {
+          "minLength": 1,
+          "title": "Contact",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "contact"
+      ],
+      "title": "MaintainerInfo",
+      "type": "object"
+    },
+    "PlatformInfo": {
+      "additionalProperties": false,
+      "description": "Hardware platform properties for a device.",
+      "properties": {
+        "cpu_vendor": {
+          "enum": [
+            "intel",
+            "amd",
+            "arm",
+            "riscv",
+            "qemu"
+          ],
+          "title": "Cpu Vendor",
+          "type": "string"
+        },
+        "cpu_family": {
+          "minLength": 1,
+          "title": "Cpu Family",
+          "type": "string"
+        },
+        "chipset": {
+          "minLength": 1,
+          "title": "Chipset",
+          "type": "string"
+        },
+        "superio": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Superio"
+        },
+        "ec": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ec"
+        },
+        "flash_chips": {
+          "items": {
+            "$ref": "#/$defs/FlashChip"
+          },
+          "title": "Flash Chips",
+          "type": "array"
+        },
+        "flash_size_mib": {
+          "exclusiveMinimum": 0,
+          "title": "Flash Size Mib",
+          "type": "integer"
+        },
+        "flash_package": {
+          "minLength": 1,
+          "title": "Flash Package",
+          "type": "string"
+        },
+        "regions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Regions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cpu_vendor",
+        "cpu_family",
+        "chipset",
+        "flash_size_mib",
+        "flash_package",
+        "regions"
+      ],
+      "title": "PlatformInfo",
+      "type": "object"
+    },
+    "PsbBlocker": {
+      "additionalProperties": false,
+      "description": "AMD Platform Secure Boot fuse status and dated evidence.",
+      "properties": {
+        "fused": {
+          "title": "Fused",
+          "type": "boolean"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fused",
+        "source"
+      ],
+      "title": "PsbBlocker",
+      "type": "object"
+    },
+    "RecoveryInfo": {
+      "additionalProperties": false,
+      "description": "Flashing and recovery capabilities.",
+      "properties": {
+        "external_programmer": {
+          "title": "External Programmer",
+          "type": "boolean"
+        },
+        "internal_flash": {
+          "title": "Internal Flash",
+          "type": "boolean"
+        },
+        "write_protect_screw": {
+          "default": false,
+          "title": "Write Protect Screw",
+          "type": "boolean"
+        },
+        "tested": {
+          "default": false,
+          "title": "Tested",
+          "type": "boolean"
+        },
+        "tested_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tested Date"
+        },
+        "notes": {
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "external_programmer",
+        "internal_flash",
+        "notes"
+      ],
+      "title": "RecoveryInfo",
+      "type": "object"
+    },
+    "SourceLink": {
+      "additionalProperties": false,
+      "description": "External documentation or commit reference.",
+      "properties": {
+        "url": {
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "note": {
+          "minLength": 1,
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "note"
+      ],
+      "title": "SourceLink",
+      "type": "object"
+    },
+    "StatusInfo": {
+      "additionalProperties": false,
+      "description": "Computed tier, score, and verification state.",
+      "properties": {
+        "tier": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "integer"
+        },
+        "score_flags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Score Flags",
+          "type": "array"
+        },
+        "build_verified": {
+          "title": "Build Verified",
+          "type": "boolean"
+        },
+        "hardware_tested": {
+          "title": "Hardware Tested",
+          "type": "boolean"
+        },
+        "last_build": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Build"
+        },
+        "last_test": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Test"
+        }
+      },
+      "required": [
+        "tier",
+        "score",
+        "build_verified",
+        "hardware_tested"
+      ],
+      "title": "StatusInfo",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Top-level Coreboot4All device record schema (version 1).",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "pattern": "^[a-z0-9_]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "vendor": {
+      "minLength": 1,
+      "title": "Vendor",
+      "type": "string"
+    },
+    "model": {
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
+    "year": {
+      "maximum": 2035,
+      "minimum": 2000,
+      "title": "Year",
+      "type": "integer"
+    },
+    "category": {
+      "enum": [
+        "laptop",
+        "desktop",
+        "server",
+        "sbc",
+        "chromebook",
+        "emulation"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "platform": {
+      "$ref": "#/$defs/PlatformInfo"
+    },
+    "coreboot": {
+      "$ref": "#/$defs/CorebootInfo"
+    },
+    "blockers": {
+      "$ref": "#/$defs/BlockersInfo"
+    },
+    "status": {
+      "$ref": "#/$defs/StatusInfo"
+    },
+    "artifacts": {
+      "$ref": "#/$defs/ArtifactsInfo"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceLink"
+      },
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "maintainer": {
+      "$ref": "#/$defs/MaintainerInfo"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "vendor",
+    "model",
+    "year",
+    "category",
+    "platform",
+    "coreboot",
+    "blockers",
+    "status",
+    "artifacts",
+    "sources",
+    "maintainer"
+  ],
+  "title": "DeviceRecord",
+  "type": "object"
+}

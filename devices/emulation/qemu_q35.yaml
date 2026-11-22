@@ -1,0 +1,62 @@
+schema_version: 1
+id: emulation_qemu_q35
+vendor: QEMU
+model: x86 Q35 / ICH9 Reference Target
+year: 2026
+category: emulation
+platform:
+  cpu_vendor: qemu
+  cpu_family: x86_64
+  chipset: q35_ich9
+  superio: null
+  ec: null
+  flash_chips: []
+  flash_size_mib: 8
+  flash_package: header
+  regions: [bios]
+coreboot:
+  mainboard_path: emulation/qemu-q35
+  in_tree: true
+  chipset_supported: true
+  sibling_mainboard: emulation/qemu-i440fx
+  public_datasheet: true
+  coreboot_tag: "26.09"
+  payload: seabios
+  payload_complete: true
+  ram_init: native
+  graphics_init: vga
+  blobs_required: []
+  defconfig: configs/coreboot/emulation_qemu_q35.defconfig
+blockers:
+  boot_guard:
+    state: disabled
+    source: "QEMU virtual hardware (no Boot Guard), 2026-11-22"
+  psb:
+    fused: false
+    source: "QEMU virtual hardware (no AMD PSB), 2026-11-22"
+  arm_signed_bootrom: false
+  recovery:
+    external_programmer: true
+    internal_flash: true
+    write_protect_screw: false
+    tested: true
+    tested_date: "2026-11-22"
+    notes: "Virtual ROM image file passed via -bios or -drive if=pflash."
+status:
+  tier: A
+  score: 95
+  score_flags: ["SC-01", "SC-02", "SC-03", "SC-04", "SC-05", "SC-06", "SC-07", "SC-09"]
+  build_verified: false
+  hardware_tested: false
+  last_build: null
+  last_test: null
+artifacts:
+  manifest: "out/builds/emulation_qemu_q35/manifest.json"
+  rom_sha256: null
+  raw_files: []
+sources:
+  - url: "https://doc.coreboot.org/mainboard/emulation/qemu-q35.html"
+    note: "coreboot QEMU Q35 documentation"
+maintainer:
+  name: "Coreboot4All Maintainers"
+  contact: "https://github.com/Antux912012/coreboot4all"

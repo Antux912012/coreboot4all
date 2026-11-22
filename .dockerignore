@@ -1,0 +1,13 @@
+.git
+out
+site
+cache
+*.rom
+*.bin
+*.fd
+__pycache__
+.pytest_cache
+.ruff_cache
+.venv
+env/*.local
+*.log

@@ -1,0 +1,67 @@
+schema_version: 1
+id: asus_p8z77_m_pro
+vendor: ASUS
+model: P8Z77-M PRO (Research / Near-supported Example)
+year: 2012
+category: desktop
+platform:
+  cpu_vendor: intel
+  cpu_family: ivybridge
+  chipset: z77
+  superio: nuvoton_nct6779d
+  ec: null
+  flash_chips:
+    - position: socketed
+      size_mib: 8
+      package: dip8
+      model: "Winbond W25Q64BV"
+      regions: [descriptor, bios, me, gbe]
+  flash_size_mib: 8
+  flash_package: dip8
+  regions: [descriptor, bios, me, gbe]
+coreboot:
+  mainboard_path: null
+  in_tree: false
+  chipset_supported: true
+  sibling_mainboard: asus/p8z77-v
+  public_datasheet: true
+  coreboot_tag: "26.09"
+  payload: seabios
+  payload_complete: true
+  ram_init: native_raminit
+  graphics_init: libgfxinit
+  blobs_required: [ifd, me, gbe]
+  defconfig: null
+blockers:
+  boot_guard:
+    state: disabled
+    source: "Intel Ivy Bridge Z77 has no Boot Guard, 2026-11-22"
+  psb:
+    fused: false
+    source: "Intel platform (AMD PSB does not apply), 2026-11-22"
+  arm_signed_bootrom: false
+  recovery:
+    external_programmer: true
+    internal_flash: true
+    write_protect_screw: false
+    tested: false
+    tested_date: null
+    notes: "Socketed DIP-8 SPI flash chip; easy external backup and restore."
+status:
+  tier: B
+  score: 55
+  score_flags: ["SC-02", "SC-03", "SC-04", "SC-05", "SC-06", "SC-07"]
+  build_verified: false
+  hardware_tested: false
+  last_build: null
+  last_test: null
+artifacts:
+  manifest: null
+  rom_sha256: null
+  raw_files: []
+sources:
+  - url: "https://doc.coreboot.org/mainboard/asus/p8z77-v.html"
+    note: "Sibling Z77 board in coreboot tree"
+maintainer:
+  name: "Coreboot4All Maintainers"
+  contact: "https://github.com/Antux912012/coreboot4all"

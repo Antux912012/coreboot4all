@@ -1,0 +1,62 @@
+schema_version: 1
+id: hp_prodesk_400_g4_research
+vendor: HP
+model: ProDesk 400 G4 (Research Example)
+year: 2017
+category: desktop
+platform:
+  cpu_vendor: intel
+  cpu_family: kabylake
+  chipset: h270
+  superio: nuvoton_npcd378
+  ec: null
+  flash_chips: []
+  flash_size_mib: 16
+  flash_package: soic8
+  regions: [descriptor, bios, me, gbe]
+coreboot:
+  mainboard_path: null
+  in_tree: false
+  chipset_supported: false
+  sibling_mainboard: null
+  public_datasheet: true
+  coreboot_tag: "26.09"
+  payload: edk2
+  payload_complete: true
+  ram_init: fsp
+  graphics_init: fsp_gop
+  blobs_required: [ifd, me, fsp]
+  defconfig: null
+blockers:
+  boot_guard:
+    state: unknown
+    source: "Pending intelmetool -b verification on target host, 2026-11-22"
+  psb:
+    fused: false
+    source: "Intel platform (AMD PSB does not apply), 2026-11-22"
+  arm_signed_bootrom: false
+  recovery:
+    external_programmer: true
+    internal_flash: false
+    write_protect_screw: false
+    tested: false
+    tested_date: null
+    notes: "SOIC-8 flash accessible; internal flash disabled by vendor IFD."
+status:
+  tier: C
+  score: 35
+  score_flags: ["SC-03", "SC-04", "SC-06", "SC-07"]
+  build_verified: false
+  hardware_tested: false
+  last_build: null
+  last_test: null
+artifacts:
+  manifest: null
+  rom_sha256: null
+  raw_files: []
+sources:
+  - url: "https://github.com/intel/FSP"
+    note: "Public Intel Kaby Lake FSP package"
+maintainer:
+  name: "Coreboot4All Maintainers"
+  contact: "https://github.com/Antux912012/coreboot4all"
