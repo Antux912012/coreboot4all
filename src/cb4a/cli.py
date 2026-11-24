@@ -20,6 +20,7 @@ from cb4a.manifest import verify_rom_against_manifest, write_sha256sums
 from cb4a.records import export_json_schema, load_all_records
 from cb4a.revert import RevertError, build_revert_plan, execute_revert_plan
 from cb4a.score import compute_score_and_tier
+from cb4a.spiemu import VirtualMX25L12805D, VirtualProgrammerServer, VoltageError
 
 app = typer.Typer(
     name="cb4a",
@@ -101,13 +102,22 @@ def build(
     jobs: int = typer.Option(int(os.environ.get("CB4A_JOBS", "4")), "--jobs", help="Make jobs."),
     offline: bool = typer.Option(False, "--offline", help="Require all sources locally."),
     payload: Optional[str] = typer.Option(None, "--payload", help="Override payload name."),
+    experimental: bool = typer.Option(
+        False, "--experimental", help="Allow building experimental Tier B ports."
+    ),
 ) -> None:
-    """Build the coreboot ROM for one Tier A device."""
+    """Build the coreboot ROM for one Tier A (or --experimental Tier B) device."""
     repo_root = _repo_root()
     path, rec = _find_device(device_id, repo_root)
     try:
         manifest = run_build(
-            rec, path, repo_root, jobs=jobs, offline=offline, payload_override=payload
+            rec,
+            path,
+            repo_root,
+            jobs=jobs,
+            offline=offline,
+            payload_override=payload,
+            experimental=experimental,
         )
     except BuildStageError as exc:
         console.print(f"[red]{exc}[/red]")
@@ -286,3 +296,50 @@ def revert(
     rc = execute_revert_plan(plan, execute=True)
     if rc != 0:
         raise typer.Exit(code=22)
+
+
+@app.command()
+def spiemu(
+    image: Path = typer.Option(
+        Path("out/sim/virtual_mx25l12805d.bin"),
+        "--image",
+        help="Backing 16 MiB virtual SPI flash file.",
+    ),
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind address for serprog TCP."),
+    port: int = typer.Option(4242, "--port", help="TCP port for serprog."),
+    voltage_mv: int = typer.Option(3300, "--voltage-mv", help="Simulated VCC in mV (must be 3300)."),
+    init_from: Optional[Path] = typer.Option(
+        None, "--init-from", help="Optional 16 MiB dump to seed virtual SPI flash."
+    ),
+    protect_ec: bool = typer.Option(
+        True, "--protect-ec/--no-protect-ec", help="Block writes/erases to 0x800000..0x82FFFF."
+    ),
+) -> None:
+    """Run a virtual 3.3 V SPI programmer (serprog TCP) for safe flashrom dry-runs."""
+    try:
+        chip = VirtualMX25L12805D(
+            image, voltage_mv=voltage_mv, protect_ec=protect_ec, init_from=init_from
+        )
+    except (VoltageError, ValueError) as exc:
+        console.print(f"[red]E-24: {exc}[/red]")
+        raise typer.Exit(code=24)
+
+    server = VirtualProgrammerServer(host, port, chip)
+    console.print(
+        f"[green]Virtual 3.3 V SPI programmer listening on {host}:{port} "
+        f"(MX25L12805D, protect_ec={protect_ec}, image={image})[/green]"
+    )
+    console.print(f"Connect with: flashrom -p serprog:ip={host}:{port}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Shutting down virtual SPI programmer...[/yellow]")
+    finally:
+        server.shutdown()
+        server.server_close()
+        chip.flush()
+        console.print(
+            f"Stats: reads={chip.stats.reads} writes={chip.stats.writes} "
+            f"erases={chip.stats.erases} ec_violations={chip.stats.ec_violations} "
+            f"ec_intact={chip.ec_sha256() == chip.initial_ec_sha256}"
+        )

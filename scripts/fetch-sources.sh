@@ -37,6 +37,16 @@ if [ -n "${SEABIOS_REV}" ]; then
   git -C "${SEABIOS_DIR}" checkout --detach "${SEABIOS_REV}"
 fi
 
+if [ "${FETCH_EDK2:-0}" = "1" ]; then
+  EDK2_DIR="${DEST}/payloads/external/edk2/workspace/tianocore"
+  mkdir -p "$(dirname "${EDK2_DIR}")"
+  if [ ! -d "${EDK2_DIR}/.git" ]; then
+    git clone --depth 1 https://github.com/MrChromebox/edk2.git "${EDK2_DIR}"
+  fi
+  git -C "${EDK2_DIR}" submodule update --init --depth 1 || true
+  git -C "${EDK2_DIR}" rev-parse HEAD > "${SRC}/edk2.commit"
+fi
+
 git rev-parse HEAD > "${SRC}/coreboot.commit"
 git -C 3rdparty/blobs rev-parse HEAD > "${SRC}/blobs.commit"
 git -C 3rdparty/libgfxinit rev-parse HEAD > "${SRC}/libgfxinit.commit"

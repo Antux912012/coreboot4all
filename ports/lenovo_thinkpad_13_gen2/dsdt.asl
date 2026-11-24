@@ -20,7 +20,15 @@ DefinitionBlock(
 		#include <soc/intel/skylake/acpi/systemagent.asl>
 		#include <soc/intel/skylake/acpi/pch.asl>
 		#include <drivers/intel/gma/acpi/default_brightness_levels.asl>
+
+		Scope (LPCB)
+		{
+			#include "acpi/ec.asl"
+			#include "acpi/superio.asl"
+		}
 	}
 
+	#include "acpi/mainboard.asl"
+	#include "acpi/sleep.asl"
 	#include <southbridge/intel/common/acpi/sleepstates.asl>
 }

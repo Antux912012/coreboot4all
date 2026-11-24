@@ -87,6 +87,7 @@ def run_build(
     jobs: int = 4,
     offline: bool = False,
     payload_override: str | None = None,
+    experimental: bool = False,
 ) -> BuildManifest:
     """Execute build stages B0 through B8 for one device record."""
     started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -106,12 +107,19 @@ def run_build(
         errors = validate_record_rules(record, record_path)
         if errors:
             raise BuildStageError(20, "; ".join(errors))
-        if record.status.tier != "A" or not record.coreboot.defconfig:
+        if record.status.tier not in ("A", "B") or (
+            record.status.tier == "B" and not experimental
+        ):
             raise BuildStageError(
-                24, f"E-24: {record.id} is tier {record.status.tier}; only Tier A builds"
+                24,
+                f"E-24: {record.id} is tier {record.status.tier}; "
+                "only Tier A builds by default (pass --experimental for Tier B).",
             )
 
-        defconfig_path = repo_root / record.coreboot.defconfig
+        if record.coreboot.defconfig:
+            defconfig_path = repo_root / record.coreboot.defconfig
+        else:
+            defconfig_path = repo_root / "configs" / "coreboot" / f"{record.id}.defconfig"
         if not defconfig_path.exists():
             raise BuildStageError(26, f"E-26: Missing defconfig {defconfig_path}")
 
@@ -144,7 +152,17 @@ def run_build(
                     26, f"E-26: Offline build missing required source path: {req}"
                 )
 
-        # B3: Isolated obj dir + DOTCONFIG + make olddefconfig.
+        # B3: Sync out-of-tree port if present, then configure coreboot via make olddefconfig.
+        port_dir = repo_root / "ports" / record.id
+        if port_dir.exists() and record.coreboot.mainboard_path is None:
+            vendor_board = record.id.replace("lenovo_", "lenovo/", 1)
+            dest_board = coreboot_dir / "src" / "mainboard" / vendor_board
+            log.write(f"[B3] Syncing out-of-tree port {port_dir} -> {dest_board}\n")
+            shutil.copytree(port_dir, dest_board, dirs_exist_ok=True)
+            vbt_src = repo_root / "out" / "devices" / record.id / "raw" / "data.vbt"
+            if vbt_src.exists():
+                shutil.copy2(vbt_src, dest_board / "data.vbt")
+
         log.write("[B3] Configuring coreboot via make olddefconfig\n")
         if obj_dir.exists():
             shutil.rmtree(obj_dir)

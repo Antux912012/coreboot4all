@@ -2,6 +2,11 @@
 
 chip soc/intel/skylake
 
+	# GPE routing matching host DSDT (GPP_C23 EC SCI -> GPE0_DW0)
+	register "gpe0_dw0" = "PMC_GPP_C"
+	register "gpe0_dw1" = "PMC_GPP_D"
+	register "gpe0_dw2" = "PMC_GPP_E"
+
 	# Power management timings
 	register "PmConfigSlpS3MinAssert" = "2"		# 50ms
 	register "PmConfigSlpS4MinAssert" = "1"		# 1s
@@ -10,6 +15,9 @@ chip soc/intel/skylake
 
 	# Enable Intel SpeedStep (EIST) and keep CSME operational
 	register "eist_enable" = "true"
+
+	# Enable S3 deep sleep (FACP LOW_POWER_S0_IDLE = False)
+	register "s0ix_enable" = "false"
 
 	device domain 0 on
 		subsystemid 0x17aa 0x5063 inherit
@@ -31,23 +39,24 @@ chip soc/intel/skylake
 		device ref thermal on end
 		device ref i2c0 on end
 
-		# Sunrise Point-LP xHCI USB controller
+		# Sunrise Point-LP xHCI USB controller (verified from lsusb -t)
+		# Note: GPP_E9/E10 are GPIOs; only GPP_E11 (USB2_OCB_2) is native mode 1.
 		device ref south_xhci on
 			register "usb2_ports" = "{
-				[0] = USB2_PORT_MID(OC0),	// USB-A
-				[1] = USB2_PORT_MID(OC1),	// USB-A / Hub
-				[2] = USB2_PORT_MID(OC_SKIP),	// Integrated Webcam
-				[3] = USB2_PORT_MID(OC_SKIP),	// Fingerprint Reader
-				[4] = USB2_PORT_MID(OC2),	// USB-C
+				[0] = USB2_PORT_MID(OC_SKIP),	// USB-A
+				[1] = USB2_PORT_MID(OC_SKIP),	// Realtek RTS5411 Hub
+				[2] = USB2_PORT_MID(OC_SKIP),	// Sunplus Integrated Webcam (1bcf:2c94)
+				[3] = USB2_PORT_MID(OC_SKIP),	// Validity VFS5011 Fingerprint (138a:0011)
+				[4] = USB2_PORT_MID(OC2),	// USB-C (GPP_E11 OC2)
 				[5] = USB2_PORT_MID(OC_SKIP),
-				[6] = USB2_PORT_MID(OC_SKIP),	// Intel Bluetooth
+				[6] = USB2_PORT_MID(OC_SKIP),	// Intel Bluetooth (8087:0a2b)
 				[7] = USB2_PORT_MID(OC_SKIP),
 			}"
 			register "usb3_ports" = "{
-				[0] = USB3_PORT_DEFAULT(OC0),
-				[1] = USB3_PORT_DEFAULT(OC1),
-				[2] = USB3_PORT_DEFAULT(OC_SKIP),
-				[3] = USB3_PORT_DEFAULT(OC2),
+				[0] = USB3_PORT_DEFAULT(OC_SKIP),
+				[1] = USB3_PORT_DEFAULT(OC_SKIP),
+				[2] = USB3_PORT_DEFAULT(OC_SKIP),	// Realtek USB3 Hub
+				[3] = USB3_PORT_DEFAULT(OC2),		// USB-C / External SS
 			}"
 		end
 
@@ -83,14 +92,10 @@ chip soc/intel/skylake
 			register "EnableLanK1Off" = "true"
 		end
 
-		# Sunrise Point-LP LPC (standard ACPI EC at 0x62/0x66 + KBC 0x60/0x64 + TPM2)
+		# Sunrise Point-LP LPC (ITE EC at 0x62/0x66 + KBC 0x60/0x64)
 		device ref lpc_espi on
 			register "serirq_mode" = "SERIRQ_CONTINUOUS"
 			register "lpc_ioe" = "LPC_IOE_EC_62_66 | LPC_IOE_KBC_60_64"
-
-			chip drivers/pc80/tpm
-				device pnp 0c31.0 on end
-			end
 		end
 
 		# Realtek ALC298 + Kaby Lake HDMI HDA Audio (00:1f.3)
